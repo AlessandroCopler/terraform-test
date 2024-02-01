@@ -66,11 +66,18 @@ data "archive_file" "zip_the_python_code" {
 # In terraform ${path.module} is the current directory.
 resource "aws_lambda_function" "terraform_lambda_func" {
  filename                       = "${path.module}/codice.zip"
+ source_code_hash               = "${data.archive_file.zip_the_python_code.output_base64sha256}"
  function_name                  = "test-function"
  role                           = aws_iam_role.lambda_role.arn
  handler                        = "index.lambda_handler"
  runtime                        = "python3.11"
  depends_on                     = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+ timeout                        = "300"
+ memory_size                    = "1024"
+
+ ephemeral_storage {
+  size = 1024
+ }
 }
 
 
