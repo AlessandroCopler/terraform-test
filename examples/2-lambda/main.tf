@@ -22,7 +22,7 @@ resource "aws_iam_role" "lambda_role" {
 EOF
 }
 
-# IAM policy for logging from a lambda
+# IAM policy per la lambda, per ora solo log
 
 resource "aws_iam_policy" "iam_policy_for_lambda" {
 
@@ -47,14 +47,14 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
 EOF
 }
 
-# Policy Attachment on the role.
+# Collegamento policy
 
 resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
   role        = aws_iam_role.lambda_role.name
   policy_arn  = aws_iam_policy.iam_policy_for_lambda.arn
 }
 
-# Generates an archive from content, a file, or a directory of files.
+# Genera l'archivio che contiene il codice della lambda.
 
 data "archive_file" "zip_the_python_code" {
  type        = "zip"
@@ -62,8 +62,10 @@ data "archive_file" "zip_the_python_code" {
  output_path = "${path.module}/codice.zip"
 }
 
-# Create a lambda function
-# In terraform ${path.module} is the current directory.
+# Crea la lambda
+# In terraform ${path.module} è la posizione attuale.
+# source_code_hash serve perchè se il codice cambia, quel valore cambia.
+# senza quello, i cambiamenti del codice sorgente non vengono visti
 resource "aws_lambda_function" "terraform_lambda_func" {
  filename                       = "${path.module}/codice.zip"
  source_code_hash               = "${data.archive_file.zip_the_python_code.output_base64sha256}"
